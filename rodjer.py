@@ -148,6 +148,19 @@ def count():
 # функция работы над ошибками
 def fix_errors():
     print('работа над ошибками')
+    with open(file_name, 'r') as f:
+        line = f.readline()
+        while line:
+            splited_line = line.split()
+            number1, sign, number2 = splited_line
+            
+            print(number1, sign, number2)
+            line = f.readline()
+
+            
+            
+
+
 
 # основной блок программы    
 print("Привет, меня зовут Роджер, а как тебя?")
@@ -163,4 +176,3 @@ if mode == '1':
     count()
 elif mode == '2':
     fix_errors()
-
