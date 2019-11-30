@@ -1,6 +1,7 @@
 from random import randint, choice
 from timeit import default_timer
 from os import path
+import os
 
 # функция для выбора режима работы
 def select_mode():
@@ -8,17 +9,24 @@ def select_mode():
     if not path.exists(file_name):
         print("""Выбери режим игры:
         1 - обычная тренировка
+        0 - выход
         """)
         mode = input()
+        while mode not in {"1", "0"}:
+            print("Введи 1 или 0")
+            mode = input()
+
     else:
         print("""Выбери режим игры:
         1 - обычная тренировка
-        2 - работа над ошибками""")
+        2 - работа над ошибками
+        0 - выход""")
         mode = input()
+        while mode not in {"1", "2", "0"}:
+            print("Введи 1, 2 или 0")
+            mode = input()
 
-    while mode not in {"1", "2"}:
-        print("Введи 1 или 2")
-        mode = input()
+    
 
     return mode
 
@@ -119,8 +127,8 @@ def count():
             print("Должна быть цифра")
             start =  default_timer()
             answer = input()
-            stop = default_timer
-            answers_time+=stop-start
+            stop = default_timer()
+            answers_time += round(stop-start)
             
         
         if int(answer) == correct:
@@ -130,7 +138,7 @@ def count():
         else:
             # создадим файл для записи ошибок
             with open(file_name, 'a') as f:
-                f.write(f"{first} {sign} {second}\n")
+                f.write(f"{first} {sign} {second} 3\n")
 
             print("Неправильно")
             print(f"Правильный ответ: {correct}")
@@ -150,12 +158,41 @@ def fix_errors():
     print('работа над ошибками')
     with open(file_name, 'r') as f:
         line = f.readline()
+        if path.exists(f"tmp_{file_name}"):
+            os.remove(f"tmp_{file_name}")
         while line:
             splited_line = line.split()
-            number1, sign, number2 = splited_line
+            number1, sign, number2, repeat = splited_line
             
+            if sign == "+":
+                correct_answer = int(number1) + int(number2)
+            if sign == "-":
+                correct_answer = int(number1) - int(number2)
+
             print(number1, sign, number2)
+            answer = input()
+            while not answer.isdigit:
+                print("Должна быть цифра")
+                answer = input()
+            #ЗДЕСЬ БЫЛА ОШИБКА БЕЗ ПРИНТА
+            print(f"???, {correct_answer}, {answer}")
+
+            if correct_answer == int(answer):
+                
+                repeat = int(repeat) - 1
+             
+                if repeat >= 1:                    
+                    with open(f"tmp_{file_name}", "a") as f2:
+                        f2.write(f"{number1} {sign} {number2} {repeat}\n")
+            else:
+                with open(f"tmp_{file_name}", "a") as f2:
+                    f2.write(f"{number1} {sign} {number2} {repeat}\n")        
+
             line = f.readline()
+        
+    os.remove(file_name)
+    os.rename(f"tmp_{file_name}", file_name)
+
 
             
             
@@ -166,13 +203,16 @@ def fix_errors():
 print("Привет, меня зовут Роджер, а как тебя?")
 name = input()
 print(f"Приятно познакомиться, {name.title()}")
-
 file_name = f"{name.lower()}_errors.txt"
 
-# выберем режим работы
-mode = select_mode()
 
-if mode == '1':
-    count()
-elif mode == '2':
-    fix_errors()
+while True:
+    # выберем режим работы
+    mode = select_mode()
+
+    if mode == '1':
+        count()
+    elif mode == '2':
+        fix_errors()
+    elif mode == '0':
+        break
