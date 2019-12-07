@@ -3,6 +3,31 @@ from timeit import default_timer
 from os import path
 import os
 
+
+
+# функция чистки повторениий примеров
+def cleanup():
+    if path.exists(file_name):
+        with open(file_name, "a") as f, open(f"tmp_{file_name}") as f2:
+            line = f.readline()
+            while line:
+                splited_line = line.split()
+                number1, sign, number2, repeat = splited_line
+                row = f"{number1} {sign} {number2}"
+                uniques = []
+                if row not in uniques:
+                    uniques.append(row)
+                    f2.write(f"{number1} {sign} {number2} {repeat}")
+        os.remove(file_name)
+        os.rename(f"tmp_{file_name}", file_name)
+
+
+# функция выбора оповещения неправильного ответа
+def warnings():
+    warnings = ["Неправильно", "Ты уверен?", "А голову дома не забыл?", "Сделай проверку"]
+    return warnings[randint(0, len(warnings) - 1)]
+
+
 # функция для выбора режима работы
 def select_mode():
 
@@ -12,7 +37,7 @@ def select_mode():
         0 - выход
         """)
         mode = input()
-        while mode not in {"1", "0"}:
+        while mode not in {"1", "0", "dev"}:
             print("Введи 1 или 0")
             mode = input()
 
@@ -22,7 +47,7 @@ def select_mode():
         2 - работа над ошибками
         0 - выход""")
         mode = input()
-        while mode not in {"1", "2", "0"}:
+        while mode not in {"1", "2", "0", "dev"}:
             print("Введи 1, 2 или 0")
             mode = input()
 
@@ -140,7 +165,7 @@ def count():
             with open(file_name, 'a') as f:
                 f.write(f"{first} {sign} {second} 3\n")
 
-            print("Неправильно")
+            print(warnings())
             print(f"Правильный ответ: {correct}")
             print("")
             mistakes+=1
@@ -171,22 +196,24 @@ def fix_errors():
 
             print(number1, sign, number2)
             answer = input()
-            while not answer.isdigit:
+            while not answer.isdigit():
                 print("Должна быть цифра")
                 answer = input()
-            #ЗДЕСЬ БЫЛА ОШИБКА БЕЗ ПРИНТА
-            print(f"???, {correct_answer}, {answer}")
+            
+            
+            
 
             if correct_answer == int(answer):
-                
+                print("Правильно!")
                 repeat = int(repeat) - 1
-             
+            
                 if repeat >= 1:                    
                     with open(f"tmp_{file_name}", "a") as f2:
                         f2.write(f"{number1} {sign} {number2} {repeat}\n")
             else:
                 with open(f"tmp_{file_name}", "a") as f2:
-                    f2.write(f"{number1} {sign} {number2} {repeat}\n")        
+                    f2.write(f"{number1} {sign} {number2} {repeat}\n")
+                print(warnings())       
 
             line = f.readline()
         
@@ -212,6 +239,13 @@ while True:
 
     if mode == '1':
         count()
+    elif mode == 'dev':
+        print("Режим разработчика")
+        print("1 - cleanup")
+        mode = input()
+        if int(mode) == 1:
+            cleanup()
+            print("Чистка файла с ошибками пользователя выполнена успешно")
     elif mode == '2':
         fix_errors()
     elif mode == '0':
