@@ -8,16 +8,18 @@ import os
 # функция чистки повторениий примеров
 def cleanup():
     if path.exists(file_name):
-        with open(file_name, "a") as f, open(f"tmp_{file_name}") as f2:
-            line = f.readline()
-            while line:
+
+        uniques = []
+        with open(file_name, "r") as f, open(f"tmp_{file_name}", "a") as f2:
+            
+            for line in f:
                 splited_line = line.split()
                 number1, sign, number2, repeat = splited_line
                 row = f"{number1} {sign} {number2}"
-                uniques = []
+                
                 if row not in uniques:
                     uniques.append(row)
-                    f2.write(f"{number1} {sign} {number2} {repeat}")
+                    f2.write(f"{number1} {sign} {number2} {repeat}\n")
         os.remove(file_name)
         os.rename(f"tmp_{file_name}", file_name)
 
@@ -94,6 +96,8 @@ def count():
     mistakes = 0
     correct_answers = 0
     answers_time = 0
+    uniques = []
+    task_number = 0
 
     while not questions_quantity.isdigit():
         print("Сколько примеров ты готов решить?")
@@ -123,52 +127,67 @@ def count():
         else:    
             print("Должна быть цифра")
     
-    for i in range(int(questions_quantity)):
-        print(f"Пример {i+1}")
-        first = randint(1, int(max_answer))
-        second = randint(1, int(max_answer))
-        sign = choice("+-")
-        
-        if sign == '-':
-            while first<second:
-                first = randint(1, int(max_answer))
-                second = randint(1, int(max_answer))
-            correct = first-second
-        
-        if sign == "+":
-            while first+second>int(max_answer):
-                first = randint(1, int(max_answer))
-                second = randint(1, int(max_answer))
-            correct = first+second
 
-        
-        print(first, sign, second)
-        start =  default_timer()
-        answer = input()
-        stop = default_timer()
-        answers_time += round(stop-start)
-
-        while not answer.isdigit():
-            print("Должна быть цифра")
-            start =  default_timer()
-            answer = input()
-            stop = default_timer()
-            answers_time += round(stop-start)
+#сделать остановку для цикла while по кол-ву возможных вариантов
+    while task_number != questions_quantity: 
+    
+    
+        for i in range(int(questions_quantity)):
             
-        
-        if int(answer) == correct:
-            print("Правильно, молодец!")
-            print("")
-            correct_answers+=1
-        else:
-            # создадим файл для записи ошибок
-            with open(file_name, 'a') as f:
-                f.write(f"{first} {sign} {second} 3\n")
+            first = randint(1, int(max_answer))
+            second = randint(1, int(max_answer))
+            sign = choice("+-")        
 
-            print(warnings())
-            print(f"Правильный ответ: {correct}")
-            print("")
-            mistakes+=1
+            if sign == '-':
+                while first<second:
+                    first = randint(1, int(max_answer))
+                    second = randint(1, int(max_answer))
+                correct = first-second
+            
+            if sign == "+":
+                while first+second>int(max_answer):
+                    first = randint(1, int(max_answer))
+                    second = randint(1, int(max_answer))
+                correct = first+second
+
+            row = f"{first} {sign} {second}"
+            while row not in uniques:
+                uniques.append(row)
+                task_number+=1
+                print(f"Пример {task_number}")        
+                print(first, sign, second)
+                start =  default_timer()
+                answer = input()
+                stop = default_timer()
+                answers_time += round(stop-start)
+
+                while not answer.isdigit():
+                    print("Должна быть цифра")
+                    start =  default_timer()
+                    answer = input()
+                    stop = default_timer()
+                    answers_time += round(stop-start)
+                    
+                
+                if int(answer) == correct:
+                    print("Правильно, молодец!")
+                    print("")
+                    correct_answers+=1
+                else:
+                    # создадим файл для записи ошибок
+                    with open(file_name, 'a') as f:
+                        f.write(f"{first} {sign} {second} 3\n")
+
+                    print(warnings())
+                    print(f"Правильный ответ: {correct}")
+                    print("")
+                    mistakes+=1
+            else:
+                
+                continue
+
+
+        
 
     if mistakes == 0:
         print("Молодец, " +name+ ". Ты правильно ответил на все вопросы за " + seconds_convert(answers_time))
