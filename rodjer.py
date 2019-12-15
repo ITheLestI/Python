@@ -62,11 +62,15 @@ def select_mode():
 def time_endings(digit):
     digit = str(digit)
     last_digit = int(digit[-1])
-    if 5 < last_digit < 10 or last_digit == 0:
+    prelast_digit = int(digit[-2])
+    if 5 < last_digit < 10 or last_digit == 0 :
         return ''
     else:
         if last_digit == 1:
-            return "у"
+            if prelast_digit == 1:
+                return ""
+            else:
+                return "у"
         else:
             return "ы"
 
