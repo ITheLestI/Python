@@ -133,62 +133,71 @@ def count():
     
 
 #сделать остановку для цикла while по количеству возможных вариантов
-    while task_number != questions_quantity: 
-    
-    
-        for i in range(int(questions_quantity)):
-            
-            first = randint(1, int(max_answer))
-            second = randint(1, int(max_answer))
-            sign = choice("+-")        
+    possible_questions = max_answer**2
+     if possible_questions <= questions_quantity:
+        
+        print(f"Такого кол-ва различных примеров не существует, выберете не больше {possible_questions}")
+        questions_quantity = input()
+        while questions_quantity not questions_quantity.isdigit():
+            print("Введите число")
+            questions_quantity = input()        
+        
+        while task_number != questions_quantity: 
+        
+        
+            for i in range(int(questions_quantity)):
+                
+                first = randint(1, int(max_answer))
+                second = randint(1, int(max_answer))
+                sign = choice("+-")        
 
-            if sign == '-':
-                while first<second:
-                    first = randint(1, int(max_answer))
-                    second = randint(1, int(max_answer))
-                correct = first-second
-            
-            if sign == "+":
-                while first+second>int(max_answer):
-                    first = randint(1, int(max_answer))
-                    second = randint(1, int(max_answer))
-                correct = first+second
+                if sign == '-':
+                    while first<second:
+                        first = randint(1, int(max_answer))
+                        second = randint(1, int(max_answer))
+                    correct = first-second
+                
+                if sign == "+":
+                    while first+second>int(max_answer):
+                        first = randint(1, int(max_answer))
+                        second = randint(1, int(max_answer))
+                    correct = first+second
 
-            row = f"{first} {sign} {second}"
-            while row not in uniques:
-                uniques.append(row)
-                task_number+=1
-                print(f"Пример {task_number}")        
-                print(first, sign, second)
-                start =  default_timer()
-                answer = input()
-                stop = default_timer()
-                answers_time += round(stop-start)
-
-                while not answer.isdigit():
-                    print("Должна быть цифра")
+                row = f"{first} {sign} {second}"
+                while row not in uniques:
+                    uniques.append(row)
+                    task_number+=1
+                    print(f"Пример {task_number}")        
+                    print(first, sign, second)
                     start =  default_timer()
                     answer = input()
                     stop = default_timer()
                     answers_time += round(stop-start)
-                    
-                
-                if int(answer) == correct:
-                    print("Правильно, молодец!")
-                    print("")
-                    correct_answers+=1
-                else:
-                    # создадим файл для записи ошибок
-                    with open(file_name, 'a') as f:
-                        f.write(f"{first} {sign} {second} 3\n")
 
-                    print(warnings())
-                    print(f"Правильный ответ: {correct}")
-                    print("")
-                    mistakes+=1
-            else:
-                
-                continue
+                    while not answer.isdigit():
+                        print("Должна быть цифра")
+                        start =  default_timer()
+                        answer = input()
+                        stop = default_timer()
+                        answers_time += round(stop-start)
+                        
+                    
+                    if int(answer) == correct:
+                        print("Правильно, молодец!")
+                        print("")
+                        correct_answers+=1
+                    else:
+                        # создадим файл для записи ошибок
+                        with open(file_name, 'a') as f:
+                            f.write(f"{first} {sign} {second} 3\n")
+
+                        print(warnings())
+                        print(f"Правильный ответ: {correct}")
+                        print("")
+                        mistakes+=1
+                else:
+                    
+                    continue
 
 
         
