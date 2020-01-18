@@ -2,6 +2,49 @@ from random import randint, choice
 from timeit import default_timer
 from os import path
 import os
+import json
+
+
+#настройки
+def edit_settings():
+    with open("settings.json", "r") as f, open("tmp_settings.json", "a") as f2:
+        settings = json.load(f)
+        print("""Текущие настройки
+(1 - включено, 0 - выключено)
+""")
+        
+        print(f"1.Вывод примеров без повторов - {settings['count_mode']}")
+        print("0 - выход")
+        print("Выберите настройку для редактирования")
+        setting_to_redact = input()
+        while setting_to_redact not in ["1", "0"]:
+            print("Введите число от 0 до 1")
+        if setting_to_redact == 1:
+            parameter = input()
+            while parameter not in ["0", "1"]:
+                print("Введи 0 или 1")
+                parameter = input()
+            settings["count_mode"] = parameter
+#сделать выход
+
+
+
+def settings():
+    if not path.exists("settings.json"):
+        settings = {
+            "count_mode":"1"
+
+        }
+
+        with open("settings.json", "w") as f:
+            json.dump(settings, f, ensure_ascii=False)
+
+
+    with open("settings.json", "r") as f:
+        settings = json.load(f)
+        
+    return settings
+
 
 
 
@@ -103,6 +146,8 @@ def count():
     uniques = []
     task_number = 0
 
+    count_mode = settings()
+
     while not questions_quantity.isdigit():
         print("Сколько примеров ты готов решить?")
         questions_quantity = input()
@@ -134,7 +179,7 @@ def count():
 
     #сделать остановку для цикла while по количеству возможных вариантов
     possible_questions = max_answer**2
-    if count_mode == 1:
+    if count_mode[count_mode] == 1:
         if possible_questions <= questions_quantity:
         
             print(f"Такого кол-ва различных примеров не существует, выберете не больше {possible_questions}")
@@ -303,31 +348,6 @@ def fix_errors():
     os.remove(file_name)
     os.rename(f"tmp_{file_name}", file_name)
 
-
-
-def settings():
-    with open("settings.txt", "r") as f:
-        print("0987")
-        if not path.exists("settings.txt"):
-            print("1342343135")
-        line = f.readline()        
-        while line:
-            splitted_line = line.split()
-            parameter, state = splitted_line
-            if state == 1:
-                state = "включено"
-            else:
-                state = "выключено"
-            if parameter == "count_mode":
-                count_mode = state               
-            #сюда добавлять новые параметры
-        print(count_mode)
-        breakwqqweq = input()
-            
-    print(f"""Текущие настройки:
-    Только различные примеры {count_mode}
-    """)
-    break
             
 
 
@@ -349,13 +369,16 @@ while True:
         print("Режим разработчика")
         print("1 - cleanup")
         print("2 - settings")
+        print("3 - edit settings")
         mode = input()
         if int(mode) == 1:
             cleanup()
             print("Чистка файла с ошибками пользователя выполнена успешно")
-    if int(mode) == 2:
+        if int(mode) == 2:
             settings()
             print("Настройки порочитаны")
+        if int(mode) == 3:
+            edit_settings()
     elif mode == '2':
         fix_errors()
     elif mode == '0':

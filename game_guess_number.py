@@ -1,6 +1,5 @@
 # Игра "Угадай число"
 import random
-
 play_again = 'да'
 print('Привет! Как тебя зовут?')
 name = input()
