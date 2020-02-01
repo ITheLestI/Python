@@ -1,3 +1,6 @@
 .vscode
 .vs
 tmp_settings.json
+__pycache__
+build
+*.spec

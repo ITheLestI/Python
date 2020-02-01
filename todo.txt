@@ -1,0 +1,5 @@
+pip install wikipedia
+pip install pyinstaller
+pyinstaller -F -i icon.ico file.py
+сделать функцию для проверки ввода check_input(input('введи свой вариант'), ['1','0'])
+сделать еще настроек

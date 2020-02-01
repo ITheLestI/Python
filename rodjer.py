@@ -4,31 +4,6 @@ from os import path
 import os
 import json
 
-
-#настройки
-def edit_settings():
-    with open("settings.json", "r") as f, open("tmp_settings.json", "a") as f2:
-        settings = json.load(f)
-        print("""Текущие настройки
-(1 - включено, 0 - выключено)
-""")
-        
-        print(f"1.Вывод примеров без повторов - {settings['count_mode']}")
-        print("0 - выход")
-        print("Выберите настройку для редактирования")
-        setting_to_redact = input()
-        while setting_to_redact not in ["1", "0"]:
-            print("Введите число от 0 до 1")
-        if setting_to_redact == 1:
-            parameter = input()
-            while parameter not in ["0", "1"]:
-                print("Введи 0 или 1")
-                parameter = input()
-            settings["count_mode"] = parameter
-#сделать выход
-
-
-
 def settings():
     if not path.exists("settings.json"):
         settings = {
@@ -45,6 +20,31 @@ def settings():
         
     return settings
 
+
+#настройки
+def edit_settings():
+    with open("settings.json", "r") as f, open("tmp_settings.json", "a") as f2:
+        settings = json.load(f)
+        print("""Текущие настройки
+(1 - включено, 0 - выключено)
+""")
+        
+        print(f"1.Вывод примеров без повторов - {settings['count_mode']}")
+        print("0 - выход")
+        print("Выберите настройку для редактирования")
+        setting_to_redact = input()
+        while setting_to_redact not in ["1", "0"]:
+            print("Введите число от 0 до 1")
+        if setting_to_redact == '1':
+            print("Ведите состояние 1 или 0")
+            parameter = input()
+            while parameter not in ["0", "1"]:
+                print("Введи 0 или 1")
+                parameter = input()
+            settings["count_mode"] = parameter
+        json.dump(settings,f2)
+    os.remove("settings.json")
+    os.rename("tmp_settings.json", "settings.json")
 
 
 
