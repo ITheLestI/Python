@@ -4,6 +4,20 @@ from os import path
 import os
 import json
 
+def check_input(user_input, valid_list, hidden=''):
+    while user_input not in valid_list:
+        printable = "Должно быть "
+        for item in valid_list[:-1]:
+            if not item == hidden:
+                printable += f'{item}, '
+        
+        printable = printable[:-2]
+        printable += f" или {valid_list[-1]}."
+
+         
+        user_input = input(printable+'\n')   
+    return user_input 
+
 def settings():
     if not path.exists("settings.json"):
         settings = {
@@ -31,16 +45,11 @@ def edit_settings():
         
         print(f"1.Вывод примеров без повторов - {settings['count_mode']}")
         print("0 - выход")
-        print("Выберите настройку для редактирования")
-        setting_to_redact = input()
-        while setting_to_redact not in ["1", "0"]:
-            print("Введите число от 0 до 1")
+        print()
+        setting_to_redact = check_input(input("Выберите настройку для редактирования: \n"), ["1", "0"])
         if setting_to_redact == '1':
-            print("Ведите состояние 1 или 0")
-            parameter = input()
-            while parameter not in ["0", "1"]:
-                print("Введи 0 или 1")
-                parameter = input()
+            parameter = check_input(input("Ведите состояние 1 или 0: \n"), ["1","0"])
+            
             settings["count_mode"] = parameter
         json.dump(settings,f2)
     os.remove("settings.json")
@@ -77,24 +86,17 @@ def warnings():
 def select_mode():
 
     if not path.exists(file_name):
-        print("""Выбери режим игры:
+        mode = check_input(input("""Выбери режим игры:
         1 - обычная тренировка
         0 - выход
-        """)
-        mode = input()
-        while mode not in {"1", "0", "dev"}:
-            print("Введи 1 или 0")
-            mode = input()
+        """),["1", "0", "dev"], 'dev')
 
     else:
-        print("""Выбери режим игры:
+        mode = check_input(input("""Выбери режим игры:
         1 - обычная тренировка
         2 - работа над ошибками
-        0 - выход""")
-        mode = input()
-        while mode not in {"1", "2", "0", "dev"}:
-            print("Введи 1, 2 или 0")
-            mode = input()
+        0 - выход
+        """),["1", "0", "2", "dev"], 'dev')
 
     
 
@@ -370,6 +372,7 @@ while True:
         print("1 - cleanup")
         print("2 - settings")
         print("3 - edit settings")
+        print("4 - check_input")
         mode = input()
         if int(mode) == 1:
             cleanup()
@@ -379,6 +382,8 @@ while True:
             print("Настройки порочитаны")
         if int(mode) == 3:
             edit_settings()
+        if int(mode) == 4:
+            check_input(input('введи что-то:'), ['1','2','ok'], "dev")
     elif mode == '2':
         fix_errors()
     elif mode == '0':
