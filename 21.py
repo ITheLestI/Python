@@ -14,9 +14,9 @@ while play_again == "да":
     min_dealer_points = 17
     move = 1
     choice = 'да'
+    bet = input("Введите ставку ")
 
     while choice == "да":
-        bet = input("Введите ставку ")
        
         if move == 1:
             dealer_card = koloda.pop()
