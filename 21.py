@@ -2,6 +2,8 @@ from random import shuffle
 from time import sleep
 
 play_again = "да"
+balance = 100
+
 
 while play_again == "да":
 
@@ -14,7 +16,8 @@ while play_again == "да":
     choice = 'да'
 
     while choice == "да":
-        
+        bet = input("Введите ставку ")
+       
         if move == 1:
             dealer_card = koloda.pop()
             dealer_points += dealer_card
@@ -49,7 +52,10 @@ while play_again == "да":
         =============    
             """)
             print("Вы проиграли")
+            balance-=bet
+            print(f"Ваш баланс: {balance}$")
             break
+
         elif your_points == 21:
             choice = "нет"
         else:
@@ -75,6 +81,7 @@ while play_again == "да":
         =============    
             """)
             print("Ничья")
+            print(f"Ваш баланс: {balance}$")
         elif dealer_points > 21:
             print(f"""
         =============
@@ -84,6 +91,8 @@ while play_again == "да":
         =============    
             """)
             print("Вы выиграли")
+            balance+=bet
+            print(f"Ваш баланс: {balance}$")
         else:
             if your_points > dealer_points:
                 print(f"""
@@ -94,6 +103,8 @@ while play_again == "да":
         =============    
             """)
                 print("Вы выиграли")
+                balance+=bet
+                print(f"Ваш баланс: {balance}$")
             else:
                 print(f"""
         =============
@@ -103,4 +114,6 @@ while play_again == "да":
         =============    
             """)
                 print("Вы проиграли")
+                balance-=bet
+                print(f"Ваш баланс: {balance}$")
     play_again = input("Сыграем еще? Да/нет\n")
