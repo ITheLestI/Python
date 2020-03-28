@@ -1,5 +1,6 @@
-from random import shuffle
+from random import shuffle, choice
 from time import sleep
+from lib import check_digit, check_input
 
 play_again = "да"
 balance = 100
@@ -15,7 +16,7 @@ def get_deck():
     shuffle(deck)
     return deck
 
-def get_card_weight(requested_card):
+def get_card_weight(requested_card, dealer=False):
     card_name = requested_card.split()
 
     card_weights = {}
@@ -25,7 +26,10 @@ def get_card_weight(requested_card):
         card_weights[f"{card}"] = 10
 
     if card_name[0] == "туз":
-        weight = input("Туз - это 1 или 11?\n")
+        if dealer:
+            weight = choice([1, 11])
+        else:
+            weight = input("Туз - это 1 или 11?\n")
     else:
         weight = card_weights[card_name[0]]
     return int(weight)
@@ -39,24 +43,22 @@ while play_again == "да":
     dealer_points = 0
     min_dealer_points = 17
     move = 1
-    choice = 'да'
+    pick_card_again = 'да'
     print(f"Ваш баланс: {balance}$")
-    bet = input("Введите ставку ")
-    while not bet.isdigit():
-        bet = input("Должа быть цифра\n")
-        bet = int(bet)
-        while bet > balance:
-            bet = input(f"Ставка слишком большая, баланс {balance}$\n")
+    
+    bet = check_digit(input("Введите ставку "))
+    while int(bet) > balance:
+        
+        bet = input(f"Ставка слишком большая, баланс {balance}$\n")
+        bet = check_digit(input("Введите ставку "))
     bet = int(bet)
-    while bet > balance:
-            bet = input(f"Ставка слишком большая, баланс {balance}$\n")
     
 
-    while choice == "да":
-       
+    while pick_card_again == "да":
+        sleep(1)
         if move == 1:
             dealer_card = koloda.pop()
-            dealer_points += get_card_weight(dealer_card)
+            dealer_points += get_card_weight(dealer_card, True)
 
             cards = []
             for i in range(2):
@@ -93,18 +95,16 @@ while play_again == "да":
             break
 
         elif your_points == 21:
-            choice = "нет"
+            pick_card_again = "нет"
         else:
-            choice = input("Ещё? (да/нет)\n")
-            while choice not in ["да", "нет"]:
-                choice  = input("Введи да или нет\n")
-
+            pick_card_again = check_input(input("Ещё? (да/нет)\n"), ["да","нет"])
+        
         move+=1
         
     else:
         while dealer_points <= 17:
             dealer_card = koloda.pop()
-            dealer_points += get_card_weight(dealer_card)
+            dealer_points += get_card_weight(dealer_card, True)
             print(f"Крупье вытянул карту  {dealer_card}")
             sleep(2)
 
@@ -152,4 +152,6 @@ while play_again == "да":
                 print("Вы проиграли")
                 balance-=bet
                 print(f"Ваш баланс: {balance}$")
-    play_again = input("Сыграем еще? Да/нет\n")
+    play_again = check_input(input("Сыграем еще? Да/нет\n"), ["да","нет"])
+    
+    
