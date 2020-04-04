@@ -5,14 +5,3 @@ git remote set-url origin git@github.com:ITheLestI/Python.git
 
 
 cash v blackjack
-
-
-while bet > balance:
-        while bet.isdigit():
-        bet = input("Должа быть цифра\n")
-        bet = int(bet)
-        while bet > balance:
-            bet = input(f"Ставка слишком большая, баланс {balance}$\n")
-        bet = int(bet)
-    
-            bet = input(f"Ставка слишком большая, баланс {balance}$\n")

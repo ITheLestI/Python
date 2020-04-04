@@ -1,9 +1,21 @@
 from random import shuffle, choice
 from time import sleep
 from lib import check_digit, check_input
+from json import load, dump
+import os
 
+file_name = "balance.json"
 play_again = "да"
-balance = 100
+balance = {"balance":100}
+
+if not os.path.exists(file_name):
+    with open(file_name, "w") as f:
+        dump(balance, f, ensure_ascii=False)
+
+with open(file_name, "r") as f:
+    balance = load(f)
+
+balance = balance["balance"]
 
 def get_deck():
     deck = []
@@ -16,7 +28,7 @@ def get_deck():
     shuffle(deck)
     return deck
 
-def get_card_weight(requested_card, dealer=False):
+def get_card_weight(requested_card, move, dealer=False):
     card_name = requested_card.split()
 
     card_weights = {}
@@ -29,10 +41,23 @@ def get_card_weight(requested_card, dealer=False):
         if dealer:
             weight = choice([1, 11])
         else:
-            weight = input("Туз - это 1 или 11?\n")
+            if move == 1:
+                weight = 11
+            else:
+                weight = input("Туз - это 1 или 11?\n")
     else:
         weight = card_weights[card_name[0]]
     return int(weight)
+
+print(dump.__doc__)
+def results(dealer_points, your_points):
+    print(f"""
+        =============
+        ОЧКИ:
+        Крупье: {dealer_points}
+        Вы: {your_points}
+        =============    
+            """)
 
 while play_again == "да":
     if not balance:
@@ -48,7 +73,7 @@ while play_again == "да":
     
     bet = check_digit(input("Введите ставку "))
     while int(bet) > balance:
-        
+
         bet = input(f"Ставка слишком большая, баланс {balance}$\n")
         bet = check_digit(input("Введите ставку "))
     bet = int(bet)
@@ -58,37 +83,26 @@ while play_again == "да":
         sleep(1)
         if move == 1:
             dealer_card = koloda.pop()
-            dealer_points += get_card_weight(dealer_card, True)
+            dealer_points += get_card_weight(dealer_card, move, True)
 
             cards = []
             for i in range(2):
                 your_card = koloda.pop()
-                your_points += get_card_weight(your_card)
+                your_points += get_card_weight(your_card, move)
                 cards.append(your_card)
         else:
             your_card = koloda.pop()
-            your_points += get_card_weight(your_card)
+            your_points += get_card_weight(your_card, move)
 
-        print(f"""
-        =============
-        ОЧКИ:
-        Крупье: {dealer_points}
-        Вы: {your_points}
-        =============    
-            """)
+        results(dealer_points, your_points)
+
         if move == 1:
             print(f"Вам выпали карты {cards[0]} и {cards[1]}")
         else:
             print(f"Вам выпала карта {your_card}")
 
         if your_points > 21:
-            print(f"""
-        =============
-        ОЧКИ:
-        Крупье: {dealer_points}
-        Вы: {your_points}
-        =============    
-            """)
+            results(dealer_points, your_points)
             print("Вы проиграли")
             balance-=bet
             print(f"Ваш баланс: {balance}$")
@@ -104,54 +118,32 @@ while play_again == "да":
     else:
         while dealer_points <= 17:
             dealer_card = koloda.pop()
-            dealer_points += get_card_weight(dealer_card, True)
+            dealer_points += get_card_weight(dealer_card, move, True)
             print(f"Крупье вытянул карту  {dealer_card}")
             sleep(2)
 
         if your_points == dealer_points:
-            print(f"""
-        =============
-        ОЧКИ:
-        Крупье: {dealer_points}
-        Вы: {your_points}
-        =============    
-            """)
+            results(dealer_points, your_points)
             print("Ничья")
             print(f"Ваш баланс: {balance}$")
         elif dealer_points > 21:
-            print(f"""
-        =============
-        ОЧКИ:
-        Крупье: {dealer_points}
-        Вы: {your_points}
-        =============    
-            """)
+            results(dealer_points, your_points)
             print("Вы выиграли")
             balance+=bet
             print(f"Ваш баланс: {balance}$")
         else:
             if your_points > dealer_points:
-                print(f"""
-        =============
-        ОЧКИ:
-        Крупье: {dealer_points}
-        Вы: {your_points}
-        =============    
-            """)
+                results(dealer_points, your_points)
                 print("Вы выиграли")
                 balance+=bet
                 print(f"Ваш баланс: {balance}$")
             else:
-                print(f"""
-        =============
-        ОЧКИ:
-        Крупье: {dealer_points}
-        Вы: {your_points}
-        =============    
-            """)
+                results(dealer_points, your_points)
                 print("Вы проиграли")
                 balance-=bet
                 print(f"Ваш баланс: {balance}$")
     play_again = check_input(input("Сыграем еще? Да/нет\n"), ["да","нет"])
-    
-    
+
+with open(file_name, "w") as f:
+    balance = {"balance":balance}
+    dump(balance, f, ensure_ascii=False)
