@@ -1,149 +1,303 @@
 from random import shuffle, choice
+from pprint import pprint
 from time import sleep
-from lib import check_digit, check_input
-from json import load, dump
-import os
 
-file_name = "balance.json"
-play_again = "да"
-balance = {"balance":100}
+import sys
+from PySide2.QtWidgets import QApplication, QMainWindow, QDialog
+from PySide2 import QtCore
+from PySide2.QtCore import QPropertyAnimation, QRect
+# импортируем связанный py файл с нашим ui файлом
+from design_21 import Ui_MainWindow
 
-if not os.path.exists(file_name):
-    with open(file_name, "w") as f:
-        dump(balance, f, ensure_ascii=False)
 
-with open(file_name, "r") as f:
-    balance = load(f)
+class MainWindow(QMainWindow):
+    def __init__(self):
+        super(MainWindow, self).__init__()
+        # создадим объект
+        self.ui = Ui_MainWindow()
+        # инициализируем нашу форму
+        self.ui.setupUi(self)
 
-balance = balance["balance"]
+        # спрячем заголовок окна
+        # self.setWindowFlags(QtCore.Qt.FramelessWindowHint | QtCore.Qt.WindowStaysOnTopHint)
 
-def get_deck():
-    deck = []
+        # соберём списки посадочных мест для карт
+        # игрок
+        self.ucards_seats = list()
+        for i in range(1, 12):
+            exec(f'self.ucards_seats.append(self.ui.ucard{i})')
+        # крупье
+        self.dcards_seats = list()
+        for i in range(1, 12):
+            exec(f'self.dcards_seats.append(self.ui.dcard{i})')
 
-    for suit in ("черви", "пики", "бубны", "трефы"):
-        for card in range(2,11):
-            deck.append(f"{card} {suit}")
-        for card in ("дама", "валет", "король", "туз"):
-            deck.append(f"{card} {suit}")
-    shuffle(deck)
-    return deck
+        # получим перемешанную колоду карт
+        self.deck = self.get_deck()
 
-def get_card_weight(requested_card, move, dealer=False):
-    card_name = requested_card.split()
+        # обнулим ставку
+        self.reset_rate()
 
-    card_weights = {}
-    for card in range(2,11):
-        card_weights[f"{card}"] = card
-    for card in ("дама", "валет", "король"):
-        card_weights[f"{card}"] = 10
+        # проверим баланс
+        self.balance = 100
+        self.ui.balance.setText(str(self.balance))
 
-    if card_name[0] == "туз":
-        if dealer:
-            weight = choice([1, 11])
+        # спрячем ненужные кнопки
+        self.ui.ace_button_1.hide()
+        self.ui.ace_button_11.hide()
+        self.information_bloсk(False)
+        self.ui.blackjack.hide()
+
+        # блок с настройками
+        self.settings_anim = QPropertyAnimation(self.ui.settings_box, b"geometry")
+        self.settings_anim.setDuration(900)
+        self.settings_button = False
+
+        # Добавим действие при нажатии на кнопки
+        self.ui.play_button.clicked.connect(self.pushed_button_play)
+        self.ui.more_button.clicked.connect(self.pushed_button_more)
+        self.ui.enough_button.clicked.connect(self.pushed_button_enough)
+        self.ui.ace_button_1.clicked.connect(self.pushed_button_ace_1)
+        self.ui.ace_button_11.clicked.connect(self.pushed_button_ace_11)
+        self.ui.close_button.clicked.connect(self.pushed_button_close)
+        self.ui.reset_rate_button.clicked.connect(self.reset_rate)
+        self.ui.settings_button.clicked.connect(self.pushed_button_settings)
+        self.ui.chip1.clicked.connect(self.pushed_button_chip)
+        self.ui.chip5.clicked.connect(self.pushed_button_chip)
+        self.ui.chip25.clicked.connect(self.pushed_button_chip)
+        self.ui.chip50.clicked.connect(self.pushed_button_chip)
+        self.ui.chip100.clicked.connect(self.pushed_button_chip)
+    
+    # нажата кнопка с фишкой
+    def pushed_button_chip(self):
+        button = self.sender()
+        self.rate += int(button.text())
+        self.ui.rate.setText(str(self.rate))
+
+
+    # кнопка НАСТРОЙКИ
+    def pushed_button_settings(self):
+        
+        if not self.settings_button:
+
+            self.settings_anim.setStartValue(QRect(970, 60, 191, 551))
+            self.settings_anim.setEndValue(QRect(740, 60, 191, 551))
+            self.settings_button = True
         else:
-            if move == 1:
-                weight = 11
-            else:
-                weight = input("Туз - это 1 или 11?\n")
-    else:
-        weight = card_weights[card_name[0]]
-    return int(weight)
 
-print(dump.__doc__)
-def results(dealer_points, your_points):
-    print(f"""
-        =============
-        ОЧКИ:
-        Крупье: {dealer_points}
-        Вы: {your_points}
-        =============    
-            """)
+            self.settings_anim.setStartValue(QRect(740, 60, 191, 551))
+            self.settings_anim.setEndValue(QRect(970, 60, 191, 551))
+            self.settings_button = False
+        
+        self.settings_anim.start()
 
-while play_again == "да":
-    if not balance:
-        break  
-    
-    koloda = get_deck()
-    your_points = 0
-    dealer_points = 0
-    min_dealer_points = 17
-    move = 1
-    pick_card_again = 'да'
-    print(f"Ваш баланс: {balance}$")
-    
-    bet = check_digit(input("Введите ставку "))
-    while int(bet) > balance:
+    # кнопка СДАТЬ
+    def pushed_button_play(self):
+        if self.rate == 0:
+            self.information_bloсk('Сделайте вашу ставку')
+        elif self.rate > self.balance:
+            self.information_bloсk('Ваша ставка слишком большая')
+        else:
+            self.ui.play_button.setEnabled(False)
+            for i in range(11):
+                self.ucards_seats[i].setText("")
+                self.dcards_seats[i].setText("")
+            self.enough_button_was_selected = False
 
-        bet = input(f"Ставка слишком большая, баланс {balance}$\n")
-        bet = check_digit(input("Введите ставку "))
-    bet = int(bet)
-    
+            # спрячем кнопки выбора очков для туза
+            self.ui.ace_button_1.hide()
+            self.ui.ace_button_11.hide()
+            self.information_bloсk(False)
+            # покажем кнопки ещё и хватит
+            self.ui.enough_button.show()
+            self.ui.more_button.show()
 
-    while pick_card_again == "да":
-        sleep(1)
-        if move == 1:
-            dealer_card = koloda.pop()
-            dealer_points += get_card_weight(dealer_card, move, True)
+            for i in range(11):
+                self.ucards_seats[i].setText('')
+            
+            self.your_points = 0
+            self.computer_points = 0
+            self.your_move = 1
+            self.computer_move = 1
 
-            cards = []
+            computer_card = self.deck.pop()
+            self.computer_points += self.get_card_points(computer_card, True)
+            self.ui.dpoints.setText(str(self.computer_points))
+
+            self.ui.dcard1.setText(f'<img src="img/deck/63x85/{computer_card}.png" />')
+            self.ui.dcard2.setText(f'<img src="img/deck/63x85/рубашка2.png" />')
+
             for i in range(2):
-                your_card = koloda.pop()
-                your_points += get_card_weight(your_card, move)
-                cards.append(your_card)
-        else:
-            your_card = koloda.pop()
-            your_points += get_card_weight(your_card, move)
+                your_card = self.deck.pop()
+                self.your_points += self.get_card_points(your_card)
+                self.ucards_seats[i].setText(f'<img src="img/deck/63x85/{your_card}.png" />')
+            self.ui.upoints.setText(str(self.your_points))
+            self.check_points()
 
-        results(dealer_points, your_points)
+    # кнопка  ЕЩЁ
+    def pushed_button_more(self):
+        self.your_move += 1
+        your_card = self.deck.pop()
+        self.your_points += self.get_card_points(your_card)
+        self.ucards_seats[self.your_move].setText(f'<img src="img/deck/63x85/{your_card}.png" />')
+        self.ui.upoints.setText(str(self.your_points))
+        self.check_points()
 
-        if move == 1:
-            print(f"Вам выпали карты {cards[0]} и {cards[1]}")
-        else:
-            print(f"Вам выпала карта {your_card}")
+    # кнопка  ХВАТИТ
+    def pushed_button_enough(self):
+        self.enough_button_was_selected = True
+        while self.computer_points < 17:
+            computer_card = self.deck.pop()
+            self.computer_points += self.get_card_points(computer_card, True) 
+            self.dcards_seats[self.computer_move].setText(f'<img src="img/deck/63x85/{computer_card}.png" />')
+            self.computer_move += 1
+        self.ui.dpoints.setText(str(self.computer_points))
+        self.check_points()
 
-        if your_points > 21:
-            results(dealer_points, your_points)
-            print("Вы проиграли")
-            balance-=bet
-            print(f"Ваш баланс: {balance}$")
-            break
-
-        elif your_points == 21:
-            pick_card_again = "нет"
-        else:
-            pick_card_again = check_input(input("Ещё? (да/нет)\n"), ["да","нет"])
+    def ace_selected(self):
+        # спрячем кнопки выбора очков для туза
+        self.ui.ace_button_1.hide()
+        self.ui.ace_button_11.hide()
+        # покажем кнопку ещё
+        self.ui.more_button.show()
+        # разблокируем кнопки ещё и сдать
+        self.ui.enough_button.setEnabled(True)
+        self.ui.play_button.setEnabled(True)
+        # покажем очки
+        self.ui.upoints.setText(str(self.your_points))
         
-        move+=1
-        
-    else:
-        while dealer_points <= 17:
-            dealer_card = koloda.pop()
-            dealer_points += get_card_weight(dealer_card, move, True)
-            print(f"Крупье вытянул карту  {dealer_card}")
-            sleep(2)
+    # метод при нажатии на кнопку туз 1
+    def pushed_button_ace_1(self):
+        self.your_points += 1
+        self.ace_selected()
 
-        if your_points == dealer_points:
-            results(dealer_points, your_points)
-            print("Ничья")
-            print(f"Ваш баланс: {balance}$")
-        elif dealer_points > 21:
-            results(dealer_points, your_points)
-            print("Вы выиграли")
-            balance+=bet
-            print(f"Ваш баланс: {balance}$")
-        else:
-            if your_points > dealer_points:
-                results(dealer_points, your_points)
-                print("Вы выиграли")
-                balance+=bet
-                print(f"Ваш баланс: {balance}$")
+    # метод при нажатии на кнопку туз 11
+    def pushed_button_ace_11(self):
+        self.your_points += 11
+        self.ace_selected()
+
+    # метод получения перемешанной колоды карт
+    def get_deck(self):
+        deck = []
+        
+        for suit in ['пики', 'червы', 'бубны', 'трефы']:
+            for card in range(2,11):
+                deck.append(f'{card} {suit}')
+            for card in ['валет', 'дама', 'король', 'туз']: 
+                deck.append(f'{card} {suit}')
+        
+        shuffle(deck)
+        return deck
+
+    # метод получения очков для определённой карты
+    def get_card_points(self, card, computer=False):
+        my_card = card.split()
+
+        card_points = {}
+        for card in range(2, 11):
+            card_points[f'{card}'] = card
+        for card in ['валет', 'дама', 'король']: 
+            card_points[f'{card}'] = 10
+
+        if my_card[0] == 'туз':
+            if computer == True:
+                points = choice([1,11])
             else:
-                results(dealer_points, your_points)
-                print("Вы проиграли")
-                balance-=bet
-                print(f"Ваш баланс: {balance}$")
-    play_again = check_input(input("Сыграем еще? Да/нет\n"), ["да","нет"])
+                self.ui.more_button.hide()
+                self.ui.ace_button_1.show()
+                self.ui.ace_button_11.show()
+                points = self.your_points
+                # блокируем кнопки
+                self.ui.enough_button.setEnabled(False)
+                self.ui.play_button.setEnabled(False)
+        else:
+            points = card_points[my_card[0]]
+        
+        return points
 
-with open(file_name, "w") as f:
-    balance = {"balance":balance}
-    dump(balance, f, ensure_ascii=False)
+    # метод прячет/показывает основные кнопки 
+    def hide_main_buttons(self):
+        # спрячем кнопки ещё и хватит
+        self.ui.more_button.hide()
+        self.ui.enough_button.hide()
+        
+    # метод прячет/показывает блок с информацией
+    def information_bloсk(self, message):
+        if message:
+            self.ui.dialog.show()
+            self.ui.information_block.setText(message)
+        else:
+            self.ui.dialog.hide()
+            self.ui.information_block.setText("")
+
+    # обнуление ставки
+    def reset_rate(self):
+        self.rate = 0
+        self.ui.rate.setText('0')
+
+    # метод для закрытия программы
+    def pushed_button_close(self):
+        self.close()
+
+    def check_points(self):
+        
+        if self.your_points > 21:
+            self.information_bloсk('ПЕРЕбОР!!!')
+            self.hide_main_buttons()
+            # balance = balance - deposit
+
+        elif self.your_points == 21:
+            self.pushed_button_enough()
+        
+        if self.enough_button_was_selected:
+            if self.computer_points == self.your_points:
+                self.information_bloсk('НИЧЬЯ!!!')
+                self.hide_main_buttons()
+            elif self.computer_points > 21:
+                self.information_bloсk('ВЫ ВЫИГРАЛИ!!!')
+                self.hide_main_buttons()
+                # balance = balance + deposit
+            elif self.computer_points > self.your_points:
+                self.information_bloсk('ВЫ ПРОИГРАЛИ!!!')
+                self.hide_main_buttons()
+                # balance = balance - deposit
+            elif self.your_points > self.computer_points:
+                self.information_bloсk('ВЫ ВЫИГРАЛИ!!!')
+                self.hide_main_buttons()
+                # balance = balance + deposit
+
+
+if __name__ == "__main__":
+    # Создадим Qt Application
+    app = QApplication(sys.argv)
+    # Создадим и покажем главное окно
+    window = MainWindow()
+    # Показываем окно
+    window.show()
+    # Запустим приложение
+    sys.exit(app.exec_())
+
+
+
+
+
+
+
+#     if play_first == True:
+#         print(f'Баланс: {balance}$')
+#         play_first = False
+    
+#     if balance == 0:
+#         print("Вы банкрот!")
+#         sleep(4)
+#         exit()
+    
+#     deposit = int(check_digit(input('Ваша ставка?\n')))
+#     while deposit > balance:
+#         deposit = int(check_digit(input("Ваша ставка слишком большая\n")))
+    
+
+
+
+#     print(f'Баланс: {balance}$')
+#     play_again = check_user_input(input('Играть ещё?\n'), ['да', 'нет'])
+  
