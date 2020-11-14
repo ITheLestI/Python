@@ -29,19 +29,19 @@ class MainWindow(QMainWindow):
 
         if not os.path.exists(file_name):
             cl = currency_exchange.currencies()
-            ru_cl = {}
+            self.ru_cl = {}
             translator = Translator(to_lang="ru")
 
             for i in cl:
-                ru_cl[translator.translate(i[6:]).title()] = i[:3]
+                self.ru_cl[translator.translate(i[6:]).title()] = i[:3]
             with open(file_name, "w", encoding="utf8") as f:
-                json.dump(ru_cl, f, ensure_ascii=False)
+                json.dump(self.ru_cl, f, ensure_ascii=False)
         else:
             with open(file_name, "r", encoding='utf8') as f:
-                ru_cl = json.load(f)
+                self.ru_cl = json.load(f)
         
         currencies_list = []
-        for i in ru_cl:
+        for i in self.ru_cl:
             currencies_list.append(i)
 
         currencies_list.sort()
@@ -52,10 +52,19 @@ class MainWindow(QMainWindow):
 
     # функция при нажатии на кнопку
     def pushed_button(self):
-        pass
+        result = ""
+        b = []
 
+        total = currency_exchange.exchange(self.ru_cl[self.ui.from_cur.currentText()], self.ru_cl[self.ui.to_cur.currentText()], self.ui.amount.text())
+        a = total[0]
+        a = a[:-4]
+        for i in a:
+            if i != ",":
 
-        #total = currency_exchange.exchange(, )
+                b.append(i)              
+        for i in b:
+            result+=i
+        print(result)
 
 
 if __name__ == "__main__":

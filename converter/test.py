@@ -1,10 +1,12 @@
 class Auto():
+    
     def say_ok(self):
         print('ok')
 
-    def __init__(self, name):
-        print('I\'m ', name )
+    def __init__(self, sss):
+        self.ppp = sss
+        print(self.ppp)
 
-c1 = Auto('Audi')
-c2 = Auto('Ford')
-c1.say_ok()
+a = Auto(5)
+b = Auto(6)
+
