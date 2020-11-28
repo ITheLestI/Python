@@ -5,8 +5,10 @@ from translate import Translator
 import json
 import os
 import sys
+from lib import *
 from PySide2.QtWidgets import QApplication, QMainWindow, QDialog
 from PySide2 import QtCore
+from math import floor
 # импортируем связанный py файл с нашим ui файлом
 from design_converter import Ui_MainWindow
 
@@ -54,18 +56,17 @@ class MainWindow(QMainWindow):
     def pushed_button(self):
         result = ""
         b = []
+        if check_digit(user_input=self.ui.amount.text(), ui=True):
+            total = currency_exchange.exchange(self.ru_cl[self.ui.from_cur.currentText()], self.ru_cl[self.ui.to_cur.currentText()], self.ui.amount.text())
+            a = total[0]
+            #print(total)
+            for i in a[:-4]:
+                if i != ",":
 
-        total = currency_exchange.exchange(self.ru_cl[self.ui.from_cur.currentText()], self.ru_cl[self.ui.to_cur.currentText()], self.ui.amount.text())
-        a = total[0]
-        a = a[:-4]
-        for i in a:
-            if i != ",":
-
-                b.append(i)              
-        for i in b:
-            result+=i
-        print(result)
-
+                    b.append(i)              
+            for i in b:
+                result+=i
+            self.ui.total.setText(f" Итого: {int(float(result))} {a[-4:]}")
 
 if __name__ == "__main__":
     # Создадим Qt Application

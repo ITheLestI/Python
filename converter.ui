@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>461</width>
-    <height>284</height>
+    <width>479</width>
+    <height>300</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -17,8 +17,8 @@
    <widget class="QWidget" name="verticalLayoutWidget">
     <property name="geometry">
      <rect>
-      <x>0</x>
-      <y>0</y>
+      <x>10</x>
+      <y>10</y>
       <width>461</width>
       <height>281</height>
      </rect>
@@ -27,7 +27,7 @@
      <item>
       <widget class="QLabel" name="label">
        <property name="text">
-        <string>Исходная валюта</string>
+        <string> Исходная валюта</string>
        </property>
       </widget>
      </item>
@@ -37,7 +37,7 @@
      <item>
       <widget class="QLabel" name="label_3">
        <property name="text">
-        <string>Конечная валюта</string>
+        <string> Конечная валюта</string>
        </property>
       </widget>
      </item>
@@ -47,7 +47,7 @@
      <item>
       <widget class="QLabel" name="label_2">
        <property name="text">
-        <string>Количество</string>
+        <string> Количество</string>
        </property>
       </widget>
      </item>
@@ -64,7 +64,7 @@
      <item>
       <widget class="QLabel" name="total">
        <property name="text">
-        <string>Итого: </string>
+        <string> Итого: </string>
        </property>
       </widget>
      </item>

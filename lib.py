@@ -1,4 +1,4 @@
-def check_digit(user_input: str, your_warning: str = '') -> str:
+def check_digit(user_input: str, your_warning: str = '', ui: bool = False) -> str:
     """
     функция проверки ввода числа
 
@@ -7,15 +7,20 @@ def check_digit(user_input: str, your_warning: str = '') -> str:
         :param str user_input: пользовательский ввод
         :return: str
     """
-    while not user_input.isdigit():
-        if your_warning:
-            print(your_warning)
+    if not ui:
+        while not user_input.isdigit():
+            if your_warning:
+                print(your_warning)
+            else:
+                print('Должна быть цифра')
+
+            user_input = input()
+        return user_input
+    else:
+        if user_input.isdigit():
+            return user_input
         else:
-            print('Должна быть цифра')
-
-        user_input = input()
-
-    return user_input
+            return False
 
 
 # функция проверки введённых данных в соответствии со списком допустимых вариантов
